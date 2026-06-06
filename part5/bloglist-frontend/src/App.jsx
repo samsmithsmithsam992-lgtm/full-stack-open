@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import Blog from './components/Blog'
+import BlogForm from './components/BlogForm'
+import Togglable from './components/Togglable'
 import blogService from './services/blogs'
 import loginService from './services/login'
 
@@ -8,11 +10,8 @@ const App = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
+  const [message, setMessage] = useState(null)
 
-  const [title, setTitle] = useState('')
-  const [author, setAuthor] = useState('')
-  const [url, setUrl] = useState('')
-const [message, setMessage] = useState(null)
   useEffect(() => {
     blogService.getAll().then(blogs => {
       setBlogs(blogs)
@@ -49,56 +48,63 @@ const [message, setMessage] = useState(null)
 
       setUsername('')
       setPassword('')
+
       setMessage('login successful')
 
-setTimeout(() => {
-  setMessage(null)
-}, 5000)
+      setTimeout(() => {
+        setMessage(null)
+      }, 5000)
     } catch (exception) {
       setMessage('wrong username or password')
 
-setTimeout(() => {
-  setMessage(null)
-}, 5000)
+      setTimeout(() => {
+        setMessage(null)
+      }, 5000)
     }
   }
+const handleLogout = () => {
+  window.localStorage.removeItem('loggedBlogappUser')
+  setUser(null)
+}
+ const addBlog = async (blogObject) => {
+  const returnedBlog = await blogService.create(blogObject)
 
-  const handleLogout = () => {
-    window.localStorage.removeItem('loggedBlogappUser')
-    setUser(null)
-  }
+  setBlogs(blogs.concat(returnedBlog))
 
-  const addBlog = async (event) => {
-    event.preventDefault()
+  setMessage('a new blog added')
 
-    const blogObject = {
-      title,
-      author,
-      url
-    }
+  setTimeout(() => {
+    setMessage(null)
+  }, 5000)
+}
 
-    const returnedBlog = await blogService.create(blogObject)
+const updateBlog = async (updatedBlog) => {
+  const returnedBlog = await blogService.update(
+    updatedBlog.id,
+    updatedBlog
+  )
 
-    setBlogs(blogs.concat(returnedBlog))
+  setBlogs(
+    blogs.map(blog =>
+      blog.id === returnedBlog.id ? returnedBlog : blog
+    )
+  )
+}
+const removeBlog = async (id) => {
+  await blogService.remove(id)
 
-    setTitle('')
-    setAuthor('')
-    setUrl('')
-    setMessage(`a new blog ${title} added`)
+  setBlogs(
+    blogs.filter(blog => blog.id !== id)
+  )
+}
+  if (user === null) {
+    return (
+      <div>
+        <h2>Log in to application</h2>
 
-setTimeout(() => {
-  setMessage(null)
-}, 5000)
-  }
+        {message && <div>{message}</div>}
 
-if (user === null) {
-  return (
-    <div>
-      <h2>Log in to application</h2>
-
-      {message && <div>{message}</div>}
-
-      <form onSubmit={handleLogin}>
+        <form onSubmit={handleLogin}>
           <div>
             username
             <input
@@ -125,6 +131,7 @@ if (user === null) {
   return (
     <div>
       <h2>blogs</h2>
+
       {message && <div>{message}</div>}
 
       <p>
@@ -132,39 +139,22 @@ if (user === null) {
         <button onClick={handleLogout}>logout</button>
       </p>
 
-      <h3>create new</h3>
+      <Togglable>
+        <h3>create new</h3>
+        <BlogForm createBlog={addBlog} />
+      </Togglable>
 
-      <form onSubmit={addBlog}>
-        <div>
-          title:
-          <input
-            value={title}
-            onChange={({ target }) => setTitle(target.value)}
-          />
-        </div>
-
-        <div>
-          author:
-          <input
-            value={author}
-            onChange={({ target }) => setAuthor(target.value)}
-          />
-        </div>
-
-        <div>
-          url:
-          <input
-            value={url}
-            onChange={({ target }) => setUrl(target.value)}
-          />
-        </div>
-
-        <button type="submit">create</button>
-      </form>
-
-      {blogs.map(blog => (
-        <Blog key={blog.id} blog={blog} />
-      ))}
+   {[...blogs]
+  .sort((a, b) => b.likes - a.likes)
+  .map(blog => (
+<Blog
+  key={blog.id}
+  blog={blog}
+  updateBlog={updateBlog}
+  removeBlog={removeBlog}
+  user={user}
+/>
+  ))}
     </div>
   )
 }
