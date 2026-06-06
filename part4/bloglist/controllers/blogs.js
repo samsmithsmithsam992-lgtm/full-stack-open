@@ -49,10 +49,27 @@ blogsRouter.post(
 }
 })
 
-blogsRouter.delete('/:id', async (request, response) => {
-  await Blog.findByIdAndDelete(request.params.id)
-  response.status(204).end()
-})
+blogsRouter.delete(
+  '/:id',
+  middleware.userExtractor,
+  async (request, response) => {
+    const blog = await Blog.findById(request.params.id)
+
+    if (!blog) {
+      return response.status(404).end()
+    }
+
+    if (blog.user.toString() !== request.user.id.toString()) {
+      return response.status(401).json({
+        error: 'only creator can delete a blog',
+      })
+    }
+
+    await Blog.findByIdAndDelete(request.params.id)
+
+    response.status(204).end()
+  }
+)
 
 blogsRouter.put('/:id', async (request, response) => {
   const updatedBlog = await Blog.findByIdAndUpdate(
