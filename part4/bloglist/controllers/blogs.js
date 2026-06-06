@@ -1,5 +1,3 @@
-const jwt = require('jsonwebtoken')
-const User = require('../models/user')
 const middleware = require('../utils/middleware')
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
@@ -41,8 +39,6 @@ blogsRouter.post(
 
     response.status(201).json(savedBlog)
 } catch (error) {
-  console.log(error)
-
   response.status(400).json({
     error: error.message,
   })
