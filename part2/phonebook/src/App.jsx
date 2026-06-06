@@ -77,17 +77,17 @@ const App = () => {
       number: newNumber
     }
 
-    personService
-      .create(personObject)
-      .then(response => {
-        setPersons(persons.concat(response.data))
-        setNewName('')
-        setNewNumber('')
-        showNotification(`Added ${newName}`, 'success')
-      })
-      .catch(error => {
-        showNotification('Failed to add person', 'error')
-      })
+personService
+  .create(personObject)
+  .then(response => {
+    setPersons(persons.concat(response.data))
+    setNewName('')
+    setNewNumber('')
+    showNotification(`Added ${newName}`, 'success')
+  })
+  .catch(error => {
+    showNotification(error.response.data.error, 'error')
+ })
   }
 
   const deletePerson = (id) => {
