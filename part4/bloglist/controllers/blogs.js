@@ -39,6 +39,8 @@ blogsRouter.post(
 
     response.status(201).json(savedBlog)
 } catch (error) {
+  console.log('POST ERROR:', error)
+
   response.status(400).json({
     error: error.message,
   })
