@@ -2,6 +2,7 @@ const express = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
 const path = require('path')
+const Person = require('./models/person')
 const app = express()
 
 app.use(cors())
@@ -40,7 +41,9 @@ let persons = [
 ]
 
 app.get('/api/persons', (request, response) => {
-  response.json(persons)
+  Person.find({}).then(persons => {
+    response.json(persons)
+  })
 })
 
 app.get('/api/persons/:id', (request, response) => {
@@ -78,27 +81,15 @@ app.post('/api/persons', (request, response) => {
     })
   }
 
-  const nameExists = persons.some(
-    person => person.name === body.name
-  )
-
-  if (nameExists) {
-    return response.status(400).json({
-      error: 'name must be unique'
-    })
-  }
-
-  const person = {
-    id: String(Math.floor(Math.random() * 1000000)),
+  const person = new Person({
     name: body.name,
     number: body.number
-  }
+  })
 
-  persons = persons.concat(person)
-
-  response.json(person)
+  person.save().then(savedPerson => {
+    response.json(savedPerson)
+  })
 })
-
 const PORT = process.env.PORT || 3001
 
 app.listen(PORT, () => {
