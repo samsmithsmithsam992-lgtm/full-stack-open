@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 const Blog = ({ blog, updateBlog, removeBlog, user }) => {
+  console.log(blog)
   const [visible, setVisible] = useState(false)
 
   const blogStyle = {
@@ -33,7 +34,7 @@ const handleRemove = () => {
   }
 }
   return (
-    <div style={blogStyle}>
+    <div className="blog" style={blogStyle}>
       <div>
         {blog.title} {blog.author}
         <button onClick={() => setVisible(true)} style={hideWhenVisible}>

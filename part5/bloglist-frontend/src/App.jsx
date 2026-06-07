@@ -69,7 +69,12 @@ const handleLogout = () => {
  const addBlog = async (blogObject) => {
   const returnedBlog = await blogService.create(blogObject)
 
-  setBlogs(blogs.concat(returnedBlog))
+  setBlogs(
+  blogs.concat({
+    ...returnedBlog,
+    user: user
+  })
+)
 
   setMessage('a new blog added')
 
